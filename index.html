@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hamam Böceği Tokatlama Simülatörü</title>
+    <title>Dev Hamam Böceği Tokatlama Simülatörü</title>
     <style>
         * {
             box-sizing: border-box;
@@ -12,7 +12,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
+            background: #0b0b16;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
             overflow: hidden;
@@ -22,116 +22,226 @@
             justify-content: center;
             height: 100vh;
         }
+
+        /* Arka Plan Hareketli Çizgiler/Neon Efekti */
+        .bg-grid {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+        }
+
         #game-container {
             position: relative;
-            width: 800px;
+            width: 850px;
             max-width: 95vw;
-            height: 500px;
-            background: rgba(25, 25, 40, 0.8);
-            border: 3px solid #ff4757;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.3);
+            height: 520px;
+            background: rgba(20, 20, 35, 0.9);
+            border: 4px solid #ff3838;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(255, 56, 56, 0.4), inset 0 0 20px rgba(0,0,0,0.8);
             overflow: hidden;
             cursor: crosshair;
+            z-index: 1;
         }
+
         .header {
             display: flex;
             justify-content: space-between;
-            width: 800px;
+            width: 850px;
             max-width: 95vw;
-            margin-bottom: 15px;
-            font-size: 20px;
+            margin-bottom: 12px;
+            font-size: 22px;
             font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            z-index: 2;
+            position: relative;
         }
-        .score-box {
-            background: #ff4757;
-            padding: 8px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
+
+        .stat-box {
+            background: linear-gradient(135deg, #ff3838, #ff4d4d);
+            padding: 8px 22px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(255, 56, 56, 0.4);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
+
+        /* DEV HAMAM BÖCEĞİ */
         .roach {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            font-size: 45px;
+            width: 110px;
+            height: 110px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.1s ease;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
-            animation: wiggle 0.3s infinite alternate;
+            z-index: 5;
+            transition: transform 0.05s linear;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.6));
         }
-        @keyframes wiggle {
-            0% { transform: rotate(-5deg); }
-            100% { transform: rotate(5deg); }
+
+        .roach-body {
+            font-size: 80px;
+            animation: runAround 0.2s infinite alternate ease-in-out;
         }
+
+        /* Böcek Üzerindeki İsim Etiketi */
+        .roach-tag {
+            background: rgba(0, 0, 0, 0.85);
+            color: #fffa65;
+            padding: 2px 8px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 6px;
+            border: 1px solid #ff3838;
+            white-space: nowrap;
+            margin-top: -10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        @keyframes runAround {
+            0% { transform: scale(1) rotate(-8deg); }
+            100% { transform: scale(1.05) rotate(8deg); }
+        }
+
+        /* Tokatlanıp Yukarı Uçma Animasyonu */
+        .flying-up {
+            animation: flyToSky 0.6s forwards cubic-bezier(0.1, 0.8, 0.3, 1)!important;
+            pointer-events: none;
+        }
+
+        @keyframes flyToSky {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(0.8) rotate(360deg) translateY(-250px); opacity: 0.8; }
+            100% { transform: scale(0.2) rotate(720deg) translateY(-600px); opacity: 0; }
+        }
+
+        /* Kaçınca Çıkan Gülme Efekti */
+        .laughing-emoji {
+            position: absolute;
+            font-size: 45px;
+            z-index: 6;
+            pointer-events: none;
+            animation: laughUp 0.8s forwards;
+        }
+
+        @keyframes laughUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-70px) scale(1.3); opacity: 0; }
+        }
+
         .splat {
             position: absolute;
-            font-size: 50px;
+            font-size: 70px;
             pointer-events: none;
-            animation: fadeOut 0.5s forwards;
+            z-index: 4;
+            animation: splatAnim 0.4s forwards;
         }
-        @keyframes fadeOut {
-            0% { opacity: 1; transform: scale(1.2); }
-            100% { opacity: 0; transform: scale(0.8); }
+
+        @keyframes splatAnim {
+            0% { transform: scale(1.5); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0; }
         }
+
+        /* Başlangıç / Bitiş Ekranı */
         #start-screen {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 15, 26, 0.95);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(11, 11, 22, 0.95);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 10;
         }
+
         h1 {
-            color: #ff4757;
-            margin-bottom: 10px;
-            text-shadow: 0 0 15px rgba(255, 71, 87, 0.6);
-            font-size: 32px;
+            color: #ff3838;
+            margin-bottom: 5px;
+            text-shadow: 0 0 20px rgba(255, 56, 56, 0.7);
+            font-size: 38px;
             text-align: center;
         }
-        p {
-            color: #a4b0be;
-            margin-bottom: 25px;
+
+        .subtitle {
+            color: #ced6e0;
+            margin-bottom: 20px;
+            font-size: 16px;
         }
+
+        .input-group {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            color: #fffa65;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            padding: 12px 20px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 2px solid #ff3838;
+            background: #1e1e30;
+            color: #white;
+            outline: none;
+            text-align: center;
+            width: 260px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        input[type="text"]::placeholder {
+            color: #718093;
+        }
+
         .btn {
-            background: #ff4757;
+            background: linear-gradient(135deg, #ff3838, #ff4d4d);
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 18px;
+            padding: 14px 35px;
+            font-size: 20px;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.5);
+            box-shadow: 0 6px 20px rgba(255, 56, 56, 0.6);
             transition: all 0.2s;
         }
+
         .btn:hover {
-            background: #ff6b81;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.7);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 56, 56, 0.8);
         }
     </style>
 </head>
 <body>
 
+    <div class="bg-grid"></div>
+
     <div class="header">
-        <div class="score-box">Skor: <span id="score">0</span></div>
-        <div class="score-box">Süre: <span id="timer">30</span>s</div>
+        <div class="stat-box">Skor: <span id="score">0</span></div>
+        <div class="stat-box">Süre: <span id="timer">30</span>s</div>
     </div>
 
     <div id="game-container">
         <div id="start-screen">
-            <h1>🪳 Hamam Böceği Tokatlama</h1>
-            <p>Kaçmalarına izin verme, üzerlerine tıklayarak ezip geç!</p>
-            <button class="btn" onclick="startGame()">Oyuna Başla</button>
+            <h1>🪳 DEV HAMAM BÖCEĞİ</h1>
+            <div class="subtitle">İstediğin ismi yaz, ekranda koşturan dev böcekleri tokatla!</div>
+            
+            <div class="input-group">
+                <label for="roach-name">Böceğin Üzerinde Ne Yazsın?</label>
+                <input type="text" id="roach-name" value="Enes" placeholder="Bir isim yaz...">
+            </div>
+
+            <button class="btn" onclick="startGame()">Oyunu Başlat 🥊</button>
         </div>
     </div>
 
@@ -140,14 +250,73 @@
         const scoreDisplay = document.getElementById('score');
         const timerDisplay = document.getElementById('timer');
         const startScreen = document.getElementById('start-screen');
+        const nameInput = document.getElementById('roach-name');
 
         let score = 0;
         let timeLeft = 30;
         let gameInterval = null;
         let spawnInterval = null;
         let isPlaying = false;
+        let customName = "Böcek";
+
+        // Web Audio API ile Gerçekçi Tokat ve Gülme Ses Efektleri (Harici dosya gerektirmez)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSlapSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // Tokat/Çarpma Sesi (White Noise + Gürültü Sentezi)
+            const bufferSize = audioCtx.sampleRate * 0.15;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15);
+
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            noise.start();
+        }
+
+        function playLaughSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // Alaycı Gülme Sesi (Kısa Frekans Dalgacıkları)
+            [0, 0.12, 0.24].forEach((time, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300 + (index * 60), audioCtx.currentTime + time);
+                osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + time + 0.08);
+
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime + time);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + time + 0.08);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(audioCtx.currentTime + time);
+                osc.stop(audioCtx.currentTime + time + 0.08);
+            });
+        }
 
         function startGame() {
+            customName = nameInput.value.trim() || "Böcek";
             container.innerHTML = '';
             score = 0;
             timeLeft = 30;
@@ -165,8 +334,8 @@
                 }
             }, 1000);
 
-            // Böcek oluşturma döngüsü
-            spawnInterval = setInterval(spawnRoach, 600);
+            // Dev böcekleri sahneye çıkarma sıklığı
+            spawnInterval = setInterval(spawnRoach, 750);
         }
 
         function spawnRoach() {
@@ -174,25 +343,34 @@
 
             const roach = document.createElement('div');
             roach.classList.add('roach');
-            roach.innerHTML = '🪳';
 
-            // Rastgele konum (Konteyner sınırları içinde)
-            const maxX = container.clientWidth - 70;
-            const maxY = container.clientHeight - 70;
+            roach.innerHTML = `
+                <div class="roach-body">🪳</div>
+                <div class="roach-tag">${customName}</div>
+            `;
+
+            // Konteyner sınırları (Büyük böcek için ayarlandı)
+            const maxX = container.clientWidth - 120;
+            const maxY = container.clientHeight - 130;
             const randomX = Math.floor(Math.random() * maxX);
             const randomY = Math.floor(Math.random() * maxY);
 
             roach.style.left = randomX + 'px';
             roach.style.top = randomY + 'px';
 
-            // Tıklama olayı (Tokatlama / Ezme)
+            // Tokatlama (Tıklama) Olayı
             roach.addEventListener('mousedown', (e) => {
-                if (!isPlaying) return;
+                if (!isPlaying || roach.classList.contains('flying-up')) return;
                 e.stopPropagation();
-                score += 10;
+                
+                playSlapSound();
+                score += 15;
                 scoreDisplay.textContent = score;
 
-                // Ezilme efekti
+                // Böceği yukarı uçur
+                roach.classList.add('flying-up');
+
+                // Ezilme / Patlama efekti
                 const splat = document.createElement('div');
                 splat.classList.add('splat');
                 splat.innerHTML = '💥';
@@ -200,18 +378,29 @@
                 splat.style.top = roach.style.top;
                 container.appendChild(splat);
 
-                setTimeout(() => splat.remove(), 500);
-                roach.remove();
+                setTimeout(() => splat.remove(), 400);
+                setTimeout(() => roach.remove(), 600);
             });
 
             container.appendChild(roach);
 
-            // 1.5 saniye içinde tıklanmazsa kendi kendine kaçıp kaybolur
-            setTimeout(() => {
-                if (roach.parentElement) {
+            // Böcek kaçarsa (2 saniye içinde tıklanmazsa)
+            const escapeTimer = setTimeout(() => {
+                if (roach.parentElement && !roach.classList.contains('flying-up')) {
+                    playLaughSound();
+                    
+                    // Gülme emojisi fırlat
+                    const laugh = document.createElement('div');
+                    laugh.classList.add('laughing-emoji');
+                    laugh.innerHTML = '🤭 💨';
+                    laugh.style.left = roach.style.left;
+                    laugh.style.top = roach.style.top;
+                    container.appendChild(laugh);
+                    setTimeout(() => laugh.remove(), 800);
+
                     roach.remove();
                 }
-            }, 1500);
+            }, 1800);
         }
 
         function endGame() {
@@ -219,14 +408,15 @@
             clearInterval(gameInterval);
             clearInterval(spawnInterval);
 
-            // Tüm kalan böcekleri temizle
+            // Kalan böcekleri temizle
             document.querySelectorAll('.roach').forEach(r => r.remove());
 
-            // Bitiş ekranını tekrar göster
+            // Bitiş Ekranını Güncelle
             startScreen.style.display = 'flex';
-            startScreen.querySelector('h1').textContent = 'Süre Bitti! 🎉';
-            startScreen.querySelector('p').textContent = `Toplam Skorun: ${score}`;
-            startScreen.querySelector('.btn').textContent = 'Tekrar Oyna';
+            startScreen.querySelector('h1').textContent = 'Süre Bitti! 🏆';
+            startScreen.querySelector('.subtitle').textContent = `Harika Tokat! Toplam Skorun: ${score}`;
+            startScreen.querySelector('.input-group').style.display = 'none';
+            startScreen.querySelector('.btn').textContent = 'Yeniden Tokatla 🥊';
         }
     </script>
 </body>
