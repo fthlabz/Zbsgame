@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamam Böceği Tokatlama Simülatörü</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #game-container {
+            position: relative;
+            width: 800px;
+            max-width: 95vw;
+            height: 500px;
+            background: rgba(25, 25, 40, 0.8);
+            border: 3px solid #ff4757;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.3);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            width: 800px;
+            max-width: 95vw;
+            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .score-box {
+            background: #ff4757;
+            padding: 8px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
+        }
+        .roach {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            font-size: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+            animation: wiggle 0.3s infinite alternate;
+        }
+        @keyframes wiggle {
+            0% { transform: rotate(-5deg); }
+            100% { transform: rotate(5deg); }
+        }
+        .splat {
+            position: absolute;
+            font-size: 50px;
+            pointer-events: none;
+            animation: fadeOut 0.5s forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0; transform: scale(0.8); }
+        }
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 26, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        h1 {
+            color: #ff4757;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(255, 71, 87, 0.6);
+            font-size: 32px;
+            text-align: center;
+        }
+        p {
+            color: #a4b0be;
+            margin-bottom: 25px;
+        }
+        .btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.5);
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #ff6b81;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.7);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="score-box">Skor: <span id="score">0</span></div>
+        <div class="score-box">Süre: <span id="timer">30</span>s</div>
+    </div>
+
+    <div id="game-container">
+        <div id="start-screen">
+            <h1>🪳 Hamam Böceği Tokatlama</h1>
+            <p>Kaçmalarına izin verme, üzerlerine tıklayarak ezip geç!</p>
+            <button class="btn" onclick="startGame()">Oyuna Başla</button>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('game-container');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const startScreen = document.getElementById('start-screen');
+
+        let score = 0;
+        let timeLeft = 30;
+        let gameInterval = null;
+        let spawnInterval = null;
+        let isPlaying = false;
+
+        function startGame() {
+            container.innerHTML = '';
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.textContent = score;
+            timerDisplay.textContent = timeLeft;
+            startScreen.style.display = 'none';
+            isPlaying = true;
+
+            // Zamanlayıcı
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+
+            // Böcek oluşturma döngüsü
+            spawnInterval = setInterval(spawnRoach, 600);
+        }
+
+        function spawnRoach() {
+            if (!isPlaying) return;
+
+            const roach = document.createElement('div');
+            roach.classList.add('roach');
+            roach.innerHTML = '🪳';
+
+            // Rastgele konum (Konteyner sınırları içinde)
+            const maxX = container.clientWidth - 70;
+            const maxY = container.clientHeight - 70;
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
+
+            roach.style.left = randomX + 'px';
+            roach.style.top = randomY + 'px';
+
+            // Tıklama olayı (Tokatlama / Ezme)
+            roach.addEventListener('mousedown', (e) => {
+                if (!isPlaying) return;
+                e.stopPropagation();
+                score += 10;
+                scoreDisplay.textContent = score;
+
+                // Ezilme efekti
+                const splat = document.createElement('div');
+                splat.classList.add('splat');
+                splat.innerHTML = '💥';
+                splat.style.left = roach.style.left;
+                splat.style.top = roach.style.top;
+                container.appendChild(splat);
+
+                setTimeout(() => splat.remove(), 500);
+                roach.remove();
+            });
+
+            container.appendChild(roach);
+
+            // 1.5 saniye içinde tıklanmazsa kendi kendine kaçıp kaybolur
+            setTimeout(() => {
+                if (roach.parentElement) {
+                    roach.remove();
+                }
+            }, 1500);
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(gameInterval);
+            clearInterval(spawnInterval);
+
+            // Tüm kalan böcekleri temizle
+            document.querySelectorAll('.roach').forEach(r => r.remove());
+
+            // Bitiş ekranını tekrar göster
+            startScreen.style.display = 'flex';
+            startScreen.querySelector('h1').textContent = 'Süre Bitti! 🎉';
+            startScreen.querySelector('p').textContent = `Toplam Skorun: ${score}`;
+            startScreen.querySelector('.btn').textContent = 'Tekrar Oyna';
+        }
+    </script>
+</body>
+</html>
